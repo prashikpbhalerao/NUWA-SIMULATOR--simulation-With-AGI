@@ -476,7 +476,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
 
     // Simulate payment creation response
     const nowPaymentsResponse = {
-      id: np_${uuidv4()},
+      id: `np_${uuidv4()}`,
       payment_status: 'waiting',
       pay_address: 'simulated_payment_address',
       price_amount: amount,
@@ -755,6 +755,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
