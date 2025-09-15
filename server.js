@@ -488,7 +488,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
       ipn_callback_url: paymentData.ipn_callback_url,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      purchase_id: purchase_${uuidv4()},
+      purchase_id: `purchase_${uuidv4()}`,
       amount_received: 0,
       payin_extra_id: null,
       smart_contract: '',
@@ -755,6 +755,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
