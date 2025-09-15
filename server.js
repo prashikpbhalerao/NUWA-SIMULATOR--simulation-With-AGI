@@ -662,7 +662,7 @@ io.on('connection', (socket) => {
   // Join simulation room
   socket.on('join-simulation', (simulationId) => {
     socket.join(simulationId);
-    console.log(User ${socket.id} joined simulation ${simulationId});
+    console.log(`User ${socket.id} joined simulation ${simulationId}`);
   });
 
   // Start simulation
@@ -755,6 +755,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
