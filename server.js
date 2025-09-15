@@ -484,7 +484,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
       pay_amount: amount,
       pay_currency: 'usd',
       order_id: payment.paymentId,
-      order_description: NUWA AGI Subscription: ${plan} plan,
+      order_description: `NUWA AGI Subscription: ${plan} plan`,
       ipn_callback_url: paymentData.ipn_callback_url,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -755,6 +755,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
