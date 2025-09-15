@@ -467,7 +467,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
       price_amount: amount,
       price_currency: 'usd',
       pay_currency: 'usd',
-      ipn_callback_url: ${req.protocol}://${req.get('host')}/api/payment/callback,
+      ipn_callback_url: `${req.protocol}://${req.get('host')}/api/payment/callback`,
       order_id: payment.paymentId,
       order_description: NUWA AGI Subscription: ${plan} plan,
       success_url: ${req.protocol}://${req.get('host')}/payment/success,
@@ -753,4 +753,5 @@ server.listen(PORT, () => {
 });
 
 // Export for testing
+
 module.exports = { app, server, simulationEngine };
