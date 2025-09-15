@@ -471,7 +471,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
       order_id: payment.paymentId,
       order_description: `NUWA AGI Subscription: ${plan} plan`,
       success_url: `${req.protocol}://${req.get('host')}/payment/success`,
-      cancel_url: ${req.protocol}://${req.get('host')}/payment/cancel
+      cancel_url: `${req.protocol}://${req.get('host')}/payment/cancel`,
     };
 
     // Simulate payment creation response
@@ -755,5 +755,6 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
