@@ -749,12 +749,13 @@ io.on('connection', (socket) => {
 
 // Start server
 server.listen(PORT, () => {
-  console.log(Server running on port ${PORT});
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
