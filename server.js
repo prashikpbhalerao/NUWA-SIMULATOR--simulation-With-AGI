@@ -504,7 +504,7 @@ app.post('/api/payment/create', authenticateToken, async (req, res) => {
 
     res.json({
       paymentId: payment.paymentId,
-      paymentUrl: https://nowpayments.io/payment/?id=${nowPaymentsResponse.id},
+      paymentUrl: `https://nowpayments.io/payment/?id=${nowPaymentsResponse.id}`,
       details: nowPaymentsResponse
     });
 
@@ -755,6 +755,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
