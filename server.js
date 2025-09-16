@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 
+const app = express();
 // Now you can use 'app' without an error
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -769,6 +770,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
