@@ -16,7 +16,6 @@ const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 // Initialize Express app
@@ -773,6 +772,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
