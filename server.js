@@ -18,11 +18,6 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 
-// Initialize Express app
-const app = express();
-// static files serve karna (frontend ke liye)
-app.use(express.static(path.join(__dirname, "public")));
-
 // root route par frontend bhejna
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -770,6 +765,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
