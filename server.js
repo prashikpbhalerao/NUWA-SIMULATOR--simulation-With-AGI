@@ -1,9 +1,9 @@
-    // File: server.js
+ // File: server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
-const path = require('path'); // <-- इसे जोड़ा गया
+const path = require('path');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -45,7 +45,7 @@ mongoose.connect(MONGODB_URI, {
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// MongoDB Schemas and Models
+// Schemas & Models
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -60,46 +60,48 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const SimulationSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: String,
-  type: { type: String, enum: ['city', 'climate', 'robotics', 'space', 'finance'], required: true },
-  parameters: mongoose.Schema.Types.Mixed,
-  status: { type: String, enum: ['running', 'paused', 'completed', 'failed'], default: 'running' },
-  progress: { type: Number, default: 0 },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  teamId: { type: String, required: true },
-  collaborators: [{
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    role: { type: String, enum: ['editor', 'viewer'] }
-  }],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-const AISessionSchema = new mongoose.Schema({
-  simulationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Simulation', required: true },
-  engine: { type: String, required: true },
-  prompt: String,
-  response: mongoose.Schema.Types.Mixed,
-  usage: { cpu: Number, ram: Number, tokens: Number },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const PaymentSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  plan: { type: String, required: true },
-  amount: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
-  paymentId: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-// Models
 const User = mongoose.model('User', UserSchema);
-const Simulation = mongoose.model('Simulation', SimulationSchema);
-const AISession = mongoose.model('AISession', AISessionSchema);
-const Payment = mongoose.model('Payment', PaymentSchema);
+
+// --------------------
+// ADD SIGNUP ROUTE
+// --------------------
+app.post("/api/signup", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({ username, email, password: hashedPassword });
+    await user.save();
+
+    res.json({ message: "Signup successful!" });
+  } catch (err) {
+    res.status(500).json({ error: "Signup failed", details: err });
+  }
+});
+
+// --------------------
+// ADD LOGIN ROUTE
+// --------------------
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({ message: "Login successful", token });
+  } catch (err) {
+    res.status(500).json({ error: "Login failed", details: err });
+  }
+});
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -115,20 +117,19 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Authorization middleware
-const requireRole = (role) => (req, res, next) => {
-  if (req.user.role !== role) return res.status(403).json({ error: 'Insufficient permissions' });
-  next();
-};
+// --------------------
+// EXAMPLE API ROUTE (for frontend to test connection)
+// --------------------
+app.get("/api/me", authenticateToken, async (req, res) => {
+  const user = await User.findById(req.user.id).select("-password");
+  res.json(user);
+});
 
 // HTTP server & Socket.io
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }
 });
-
-// Simulation engine & socket events
-// ... (बाकी का simulation engine और socket.io code वैसे ही रहेगा)
 
 // Start server
 server.listen(PORT, () => {
