@@ -20,8 +20,6 @@ const { v4: uuidv4 } = require('uuid');
 
 // Initialize Express app
 const app = express();
-const path = require("path");
-
 // static files serve karna (frontend ke liye)
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -772,6 +770,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
