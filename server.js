@@ -3,9 +3,10 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
-const path = require("path");
+const express = require('express');
+const app = express(); // 'app' is now initialized
 
-// static files serve karna
+// Now you can use 'app' without an error
 app.use(express.static(path.join(__dirname, "public")));
 
 // root route par frontend bhejna
@@ -770,6 +771,7 @@ server.listen(PORT, () => {
 // Export for testing
 
 module.exports = { app, server, simulationEngine };
+
 
 
 
