@@ -1,4 +1,4 @@
- // File: server.js
+// File: server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -14,7 +14,13 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// --- CORS कॉन्फ़िगरेशन को यहाँ अपडेट किया गया है ---
+const corsOptions = {
+    origin: 'https://frolicking-queijadas-aa917d.netlify.app',
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+// ---------------------------------------------------
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
