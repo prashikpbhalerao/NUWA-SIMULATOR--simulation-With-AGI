@@ -89,7 +89,34 @@ app.post("/api/signup", async (req, res) => {
 // ADD LOGIN ROUTE
 // --------------------
 app.post("/api/login", async (req, res) => {
+    
+  try {// New AI Chat Route
+app.post("/api/ai-chat", authenticateToken, async (req, res) => {
   try {
+    const { prompt } = req.body;
+
+    // Check if API key is available
+    if (!OPENAI_API_KEY) {
+      return res.status(500).json({ error: "OpenAI API key is not configured on the server." });
+    }
+
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1000,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': Bearer ${OPENAI_API_KEY}
+      }
+    });
+
+    res.json({ reply: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error('AI Chat Error:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: "Failed to get response from AI.", details: error.message });
+  }
+});
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "User not found" });
@@ -144,3 +171,4 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
