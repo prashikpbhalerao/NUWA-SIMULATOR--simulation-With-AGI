@@ -92,6 +92,45 @@ app.post("/api/login", async (req, res) => {
     
   try {// New AI Chat Route
 app.post("/api/ai-chat", authenticateToken, async (req, res) => {
+    const SimulationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, required: true },
+  data: { type: Object, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Simulation = mongoose.model('Simulation', SimulationSchema);
+
+// Route to save a simulation
+app.post("/api/simulations/save", authenticateToken, async (req, res) => {
+  try {
+    const { name, data } = req.body;
+    const userId = req.user.id; // User ID from the token
+
+    if (!name || !data) {
+      return res.status(400).json({ error: "Name and data are required." });
+    }
+
+    const simulation = new Simulation({ userId, name, data });
+    await simulation.save();
+
+    res.status(201).json({ message: "Simulation saved successfully!", simulationId: simulation._id });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save simulation.", details: err.message });
+  }
+});
+
+// Route to get all saved simulations for a user
+app.get("/api/simulations", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const simulations = await Simulation.find({ userId }).select('-data').sort({ createdAt: -1 });
+
+    res.json(simulations);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch simulations.", details: err.message });
+  }
+});
   try {
     const { prompt } = req.body;
 
@@ -171,4 +210,5 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
