@@ -29,7 +29,23 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Root route for frontend
-app.get("/", (req, res) => {
+app.get("/", (req, res) => {// Route to load a specific simulation
+app.get("/api/simulations/:simulationId", authenticateToken, async (req, res) => {
+  try {
+    const { simulationId } = req.params;
+    const userId = req.user.id; // User ID from the token
+
+    const simulation = await Simulation.findOne({ _id: simulationId, userId: userId });
+
+    if (!simulation) {
+      return res.status(404).json({ error: "Simulation not found or you don't have access." });
+    }
+
+    res.json(simulation);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load simulation.", details: err.message });
+  }
+});
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 app.get('/', (req, res) => {
@@ -210,5 +226,6 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
