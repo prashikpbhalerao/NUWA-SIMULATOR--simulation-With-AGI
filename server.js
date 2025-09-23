@@ -68,22 +68,103 @@ mongoose.connect(MONGODB_URI, {
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Schemas & Models
-const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  team: { type: String, default: 'Team Alpha' },
-  role: { type: String, enum: ['admin', 'editor', 'viewer'], default: 'viewer' },
-  subscription: {
-    plan: { type: String, enum: ['basic', 'pro', 'team', 'enterprise', 'global', 'unlimited'], default: 'basic' },
-    status: { type: String, enum: ['active', 'inactive', 'canceled'], default: 'inactive' },
-    validUntil: Date
+Const UserSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
   },
-  createdAt: { type: Date, default: Date.now }
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  // नए और बेहतर फ़ील्ड्स
+  subscriptionPlan: {
+    type: String,
+    default: 'basic' // डिफ़ॉल्ट रूप से 'basic' प्लान
+  },
+  proSubscriptionDate: {
+    type: Date,
+    default: null
+  }
 });
 
 const User = mongoose.model('User', UserSchema);
+// Route to create a new payment
+app.post("/api/create-payment", authenticateToken, async (req, res) => {
+  try {
+    const { amount, currency } = req.body;
+    const userId = req.user.id;
 
+    if (!amount || !currency) {
+      return res.status(400).json({ error: "Amount and currency are required." });
+    }
+// Route to handle payment status updates from NowPayments (webhook)
+app.post("/api/payment-status", async (req, res) => {
+  try {
+    const { order_id, payment_status, pay_amount, pay_currency } = req.body;
+
+    // Optional: Add verification to ensure the request is from NowPayments
+    const signature = req.headers['x-nowpayments-sig'];
+    // You would use your IPN secret key to verify the signature here
+
+    console.log(`NowPayments Webhook received for order: ${order_id}`);
+    console.log(`Payment Status: ${payment_status}`);
+
+    if (payment_status === 'finished') {
+      // order_id से plan और user ID निकालें
+      const orderParts = order_id.split('_');
+      const plan = orderParts[1];
+      const userId = orderParts[2];
+
+      // User के subscriptionPlan को अपडेट करें
+      await User.findByIdAndUpdate(userId, {
+        subscriptionPlan: plan,
+        proSubscriptionDate: new Date()
+      });
+
+      console.log(`User ${userId} successfully upgraded to ${plan} plan.`);
+      res.status(200).send('Webhook received and user updated.');
+    } else {
+      res.status(200).send(`Webhook received, but payment status is ${payment_status}.`);
+    }
+
+  } catch (err) {
+    console.error('Webhook error:', err.message);
+    res.status(500).send('Internal Server Error.');
+  }
+});
+    // NowPayments API call to create a payment
+    const response = await axios.post(
+      'https://api.nowpayments.io/v1/payment',
+      {
+        price_amount: amount,
+        price_currency: currency,
+        pay_currency: 'btc', // You can change this to any crypto
+        order_id: `subscription_${userId}_${Date.now()}`,
+        // This is a webhook URL. NowPayments will notify this URL when the payment is completed.
+        // You'll need to set this up later. For now, we'll just generate the payment.
+        ipn_callback_url: "https://your-domain.com/api/payment-status"
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': NOWPAYMENTS_API_KEY
+        }
+      }
+    );
+
+    res.json(response.data);
+  } catch (err) {
+    console.error('Payment creation error:', err.response ? err.response.data : err.message);
+    res.status(500).json({ error: "Failed to create payment.", details: err.message });
+  }
+});
 // --------------------
 // ADD SIGNUP ROUTE
 // --------------------
@@ -226,6 +307,7 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
 
