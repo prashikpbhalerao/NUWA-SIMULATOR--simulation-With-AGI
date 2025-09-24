@@ -246,7 +246,67 @@ const checkProSubscription = async (req, res, next) => {
 });
   try {
     const { prompt } = req.body;
+// यह AI इंजन को चलाने के लिए है, जो एक प्रीमियम फ़ीचर है
+app.post("/api/ai/run", authenticateToken, checkProSubscription, async (req, res) => {
+  try {
+    const { engine, prompts } = req.body;
+    if (!engine || !prompts) {
+      return res.status(400).json({ error: "Engine and prompts are required." });
+    }
 
+    const response = await axios.post(
+      `https://api.openai.com/v1/engines/${engine}/completions`,
+      {
+        prompt: prompts,
+        max_tokens: 150,
+        n: 1,
+        stop: null,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json(response.data.choices[0].text);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to run AI engine.", details: err.message });
+  }
+});
+
+// यह सिटी प्लानिंग के लिए है, जो एक और प्रीमियम फ़ीचर है
+app.post("/api/ai/city", authenticateToken, checkProSubscription, async (req, res) => {
+  // Your code for City Planning AI here
+  // For now, it can be a simple placeholder
+  res.json({ message: "City Planning AI is a Pro feature." });
+});
+
+// यह रोबोटिक्स के लिए है, जो एक और प्रीमियम फ़ीचर है
+app.post("/api/ai/robotics", authenticateToken, checkProSubscription, async (req, res) => {
+  // Your code for Robotics AI here
+  res.json({ message: "Robotics AI is a Pro feature." });
+});
+
+// यह क्लाइमेट के लिए है, जो एक और प्रीमियम फ़ीचर है
+app.post("/api/ai/climate", authenticateToken, checkProSubscription, async (req, res) => {
+  // Your code for Climate AI here
+  res.json({ message: "Climate AI is a Pro feature." });
+});
+
+// यह स्पेस मिशन के लिए है, जो एक और प्रीमियम फ़ीचर है
+app.post("/api/ai/space", authenticateToken, checkProSubscription, async (req, res) => {
+  // Your code for Space Mission AI here
+  res.json({ message: "Space Mission AI is a Pro feature." });
+});
+
+// यह फ़ाइनेंस के लिए है, जो एक और प्रीमियम फ़ीचर है
+app.post("/api/ai/finance", authenticateToken, checkProSubscription, async (req, res) => {
+  // Your code for Finance AI here
+  res.json({ message: "Finance AI is a Pro feature." });
+});
     // Check if API key is available
     if (!OPENAI_API_KEY) {
       return res.status(500).json({ error: "OpenAI API key is not configured on the server." });
@@ -323,6 +383,7 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
 
