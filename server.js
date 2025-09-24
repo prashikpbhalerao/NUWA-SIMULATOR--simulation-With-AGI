@@ -218,7 +218,23 @@ app.post("/api/simulations/save", authenticateToken, async (req, res) => {
 });
 
 // Route to get all saved simulations for a user
-app.get("/api/simulations", authenticateToken, async (req, res) => {
+app.get("/api/simulations", authenticateToken, async (req, res) => {// Middleware to check for 'Pro' subscription
+const checkProSubscription = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (user.subscriptionPlan === 'basic') {
+      return res.status(403).json({ error: "Access Denied. Please upgrade to a Pro plan." });
+    }
+
+    next(); // Continue to the next middleware or route handler
+  } catch (err) {
+    res.status(500).json({ error: "Failed to check subscription status." });
+  }
+};
   try {
     const userId = req.user.id;
     const simulations = await Simulation.find({ userId }).select('-data').sort({ createdAt: -1 });
@@ -307,6 +323,7 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
 
