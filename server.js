@@ -98,16 +98,37 @@ const User = mongoose.model('User', UserSchema);
 // Route to create a new payment
 app.post("/api/create-payment", authenticateToken, async (req, res) => {
   try {
-    const { amount, currency } = req.body;
+    const { amount, currency, plan } = req.body;
     const userId = req.user.id;
 
-    if (!amount || !currency) {
-      return res.status(400).json({ error: "Amount and currency are required." });
+    if (!amount || !currency || !plan) {
+      return res.status(400).json({ error: "Amount, currency, and plan are required." });
     }
-// Route to handle payment status updates from NowPayments (webhook)
-app.post("/api/payment-status", async (req, res) => {
-  try {
-    const { order_id, payment_status, pay_amount, pay_currency } = req.body;
+
+    // NowPayments API call to create a payment
+    const response = await axios.post(
+      'https://api.nowpayments.io/v1/payment',
+      {
+        price_amount: amount,
+        price_currency: currency,
+        pay_currency: 'btc',
+        order_id: `subscription_${plan}_${userId}_${Date.now()}`,
+        ipn_callback_url: "https://your-domain.com/api/payment-status"
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': NOWPAYMENTS_API_KEY
+        }
+      }
+    );
+
+    res.json(response.data);
+  } catch (err) {
+    console.error('Payment creation error:', err.response ? err.response.data : err.message);
+    res.status(500).json({ error: "Failed to create payment.", details: err.message });
+  }
+});
 
     // Optional: Add verification to ensure the request is from NowPayments
     const signature = req.headers['x-nowpayments-sig'];
@@ -383,6 +404,7 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
 
