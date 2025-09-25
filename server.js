@@ -391,6 +391,27 @@ app.get("/api/me", authenticateToken, async (req, res) => {
   res.json(user);
 });
 
+// Route to get user data (now includes subscriptionPlan)
+app.get("/api/user", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password'); // Password को हटा दें
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // अब हम subscriptionPlan भी भेज रहे हैं
+    res.json({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      subscriptionPlan: user.subscriptionPlan // यह ज़रूरी है!
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get user data." });
+  }
+});
 // HTTP server & Socket.io
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -404,6 +425,7 @@ server.listen(PORT, () => {
 
 // Export for testing
 module.exports = { app, server };
+
 
 
 
